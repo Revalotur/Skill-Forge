@@ -119,3 +119,82 @@ export async function updateTask(
     body: JSON.stringify(patch),
   });
 }
+
+export type DailyMission = {
+  id: string;
+  user_id: string;
+  task_id: string | null;
+  title: string;
+  date: string;
+  is_completed: boolean;
+  completed_at: string | null;
+  created_at: string;
+};
+
+export type Streak = {
+  current_streak: number;
+  longest_streak: number;
+  missions_completed: number;
+  today_completed: boolean;
+};
+
+export async function getTodayMission(userId: string) {
+  return request<DailyMission>(`/missions/today?user_id=${userId}`);
+}
+
+export async function updateMission(missionId: string, isCompleted: boolean) {
+  return request<DailyMission>(`/missions/${missionId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ is_completed: isCompleted }),
+  });
+}
+
+export async function getStreak(userId: string) {
+  return request<Streak>(`/missions/streak?user_id=${userId}`);
+}
+
+export async function getMissionHistory(userId: string) {
+  return request<DailyMission[]>(`/missions/history?user_id=${userId}`);
+}
+
+export type MentorMessage = {
+  role: "user" | "assistant";
+  content: string;
+};
+
+export type MentorReply = {
+  reply: string;
+  source: "gemini" | "fallback";
+};
+
+export async function sendMentorChat(
+  userId: string,
+  messages: MentorMessage[],
+  query: string
+) {
+  return request<MentorReply>("/mentor/chat", {
+    method: "POST",
+    body: JSON.stringify({ user_id: userId, messages, query }),
+  });
+}
+
+export type Analytics = {
+  total_tasks: number;
+  completed_tasks: number;
+  progress_percent: number;
+  current_streak: number;
+  longest_streak: number;
+  missions_completed: number;
+  last_7_days: { date: string; label: string; completed: number }[];
+  weekly_distribution: {
+    week: number;
+    label: string;
+    total: number;
+    completed: number;
+  }[];
+  recent_activity: { title: string; week: number; completed_at: string }[];
+};
+
+export async function getAnalytics(userId: string) {
+  return request<Analytics>(`/analytics?user_id=${userId}`);
+}

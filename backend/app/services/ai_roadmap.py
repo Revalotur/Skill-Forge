@@ -119,7 +119,7 @@ def validate_roadmap(data: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-async def _call_gemini(prompt: str, timeout: int = 60) -> str:
+async def _call_gemini(prompt: str, timeout: int = 60, json_mode: bool = True) -> str:
     api_key = settings.gemini_api_key
     if not api_key:
         raise AIUnavailableError("GEMINI_API_KEY kosong")
@@ -130,7 +130,7 @@ async def _call_gemini(prompt: str, timeout: int = 60) -> str:
         "generationConfig": {
             "temperature": 0.7,
             "maxOutputTokens": 8192,
-            "responseMimeType": "application/json",
+            **({"responseMimeType": "application/json"} if json_mode else {}),
         },
     }
     headers = {"Content-Type": "application/json"}

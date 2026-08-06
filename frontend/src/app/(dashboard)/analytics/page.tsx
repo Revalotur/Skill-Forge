@@ -1,9 +1,4 @@
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { AnalyticsView } from "@/components/analytics/analytics-view";
 
 export default function AnalyticsPage() {
   return (
@@ -14,15 +9,7 @@ export default function AnalyticsPage() {
           Visualisasi aktivitas belajar, streak, dan distribusi materi.
         </p>
       </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Belum ada data</CardTitle>
-          <CardDescription>
-            Statistik akan tampil setelah kamu mulai belajar dan menyelesaikan
-            misi harian.
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      <AnalyticsView />
     </div>
   );
 }

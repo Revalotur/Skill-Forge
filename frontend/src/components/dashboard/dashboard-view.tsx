@@ -16,12 +16,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import type { Roadmap, RoadmapSummary } from "@/lib/api";
+import { MissionCard } from "@/components/dashboard/mission-card";
+import type { Roadmap, RoadmapSummary, Streak } from "@/lib/api";
 
 export function DashboardView({ email }: { email: string | null }) {
   const router = useRouter();
   const [summary, setSummary] = useState<RoadmapSummary | null>(null);
   const [roadmap, setRoadmap] = useState<Roadmap | null>(null);
+  const [streak, setStreak] = useState<Streak | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [noData, setNoData] = useState(false);
@@ -45,6 +47,11 @@ export function DashboardView({ email }: { email: string | null }) {
       const roadmapRes = await fetch("/api/roadmap/latest", { cache: "no-store" });
       if (roadmapRes.ok) {
         setRoadmap(await roadmapRes.json());
+      }
+
+      const streakRes = await fetch("/api/mission/streak", { cache: "no-store" });
+      if (streakRes.ok) {
+        setStreak(await streakRes.json());
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Terjadi kesalahan.");
@@ -130,7 +137,7 @@ export function DashboardView({ email }: { email: string | null }) {
     return { week: `W${week}`, Selesai: done, Total: tasks.length };
   });
 
-  const streakDays = 0;
+  const streakDays = streak?.current_streak ?? 0;
 
   return (
     <div className="flex flex-col gap-6">
@@ -140,6 +147,8 @@ export function DashboardView({ email }: { email: string | null }) {
           {email ?? "Pengguna"} — Ringkasan progres belajarmu.
         </p>
       </div>
+
+      <MissionCard />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>

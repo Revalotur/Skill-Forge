@@ -1,27 +1,22 @@
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { createClient } from "@/lib/supabase/server";
+import { MentorChat } from "@/components/mentor/mentor-chat";
 
-export default function MentorPage() {
+export default async function MentorPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   return (
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-bold">AI Mentor 🤖</h1>
         <p className="text-muted-foreground">
-          Chat dengan AI mentor yang memahami konteks roadmapmu.
+          {user?.email ?? "Pengguna"} — Chat dengan AI yang memahami konteks
+          roadmap belajarmu.
         </p>
       </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Segera hadir</CardTitle>
-          <CardDescription>
-            Fitur AI Mentor tersedia pada Sprint 3.
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      <MentorChat />
     </div>
   );
 }
