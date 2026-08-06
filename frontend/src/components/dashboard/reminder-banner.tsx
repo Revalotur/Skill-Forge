@@ -36,10 +36,12 @@ export function ReminderBanner() {
 
   if (loading || !mission || mission.is_completed) return null;
 
+  const missionId = mission.id;
+
   async function onComplete() {
     setUpdating(true);
     try {
-      const res = await fetch(`/api/mission/${mission.id}`, {
+      const res = await fetch(`/api/mission/${missionId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ is_completed: true }),
