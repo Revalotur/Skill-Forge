@@ -47,6 +47,8 @@ export function MissionCard() {
     void (async () => {
       await fetchData();
     })();
+    window.addEventListener("mission-updated", fetchData);
+    return () => window.removeEventListener("mission-updated", fetchData);
   }, [fetchData]);
 
   async function onComplete() {
