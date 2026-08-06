@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { CheckCircle2, Circle, Flame, Loader2, PartyPopper } from "lucide-react";
+import { AlertCircle, CheckCircle2, Circle, Flame, Loader2, PartyPopper } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -63,6 +64,7 @@ export function MissionCard() {
       }
       const updated = await res.json();
       setMission(updated);
+      toast.success("Misi selesai! 🔥 Streak bertambah.");
       await fetchData();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Terjadi kesalahan.");
@@ -101,7 +103,14 @@ export function MissionCard() {
           </div>
         )}
         {mission && (
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col gap-3">
+            {!mission.is_completed && (
+              <div className="flex items-center gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs font-medium text-amber-600 dark:text-amber-400">
+                <AlertCircle className="size-4" />
+                Belum dikerjakan — selesaikan hari ini untuk menjaga streak-mu.
+              </div>
+            )}
+            <div className="flex items-center gap-3">
             {mission.is_completed ? (
               <CheckCircle2 className="size-6 shrink-0 text-green-500" />
             ) : (
@@ -132,6 +141,7 @@ export function MissionCard() {
                 )}
               </Button>
             )}
+            </div>
           </div>
         )}
       </CardContent>
