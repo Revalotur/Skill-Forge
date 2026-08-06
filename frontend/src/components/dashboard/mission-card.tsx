@@ -68,7 +68,6 @@ export function MissionCard() {
       setMission(updated);
       toast.success("Misi selesai! 🔥 Streak bertambah.");
       window.dispatchEvent(new Event("mission-updated"));
-      await fetchData();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Terjadi kesalahan.");
     } finally {

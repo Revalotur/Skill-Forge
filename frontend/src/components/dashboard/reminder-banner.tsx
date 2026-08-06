@@ -19,17 +19,23 @@ export function ReminderBanner() {
         setMission(null);
         return;
       }
-      if (res.ok) {
-        const data = (await res.json()) as DailyMission;
-        setMission(data);
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error ?? "Gagal mengambil misi.");
       }
+      const data = (await res.json()) as DailyMission;
+      setMission(data);
+    } catch {
+      setMission(null);
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    void refetch();
+    void (async () => {
+      await refetch();
+    })();
     window.addEventListener("mission-updated", refetch);
     return () => window.removeEventListener("mission-updated", refetch);
   }, [refetch]);
