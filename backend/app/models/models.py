@@ -2,6 +2,7 @@ import uuid
 
 from sqlalchemy import Column, DateTime, Float, String, Text, Boolean, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from app.core.database import Base
@@ -11,7 +12,7 @@ class Assessment(Base):
     __tablename__ = "assessments"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("auth.users.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(UUID(as_uuid=True), nullable=False, index=True)
     target_career = Column(String, nullable=False)
     current_skills = Column(Text, nullable=False, default="")
     learning_hours = Column(String)
@@ -24,7 +25,7 @@ class Roadmap(Base):
     __tablename__ = "roadmaps"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("auth.users.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(UUID(as_uuid=True), nullable=False, index=True)
     assessment_id = Column(UUID(as_uuid=True), ForeignKey("assessments.id", ondelete="SET NULL"))
     target_career = Column(String, nullable=False)
     duration_weeks = Column(Float, nullable=False, default=12)
@@ -32,6 +33,13 @@ class Roadmap(Base):
     status = Column(String, nullable=False, default="generating")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    tasks = relationship(
+        "RoadmapTask",
+        back_populates="roadmap",
+        cascade="all, delete-orphan",
+        order_by="RoadmapTask.week",
+    )
 
 
 class RoadmapTask(Base):
@@ -47,12 +55,14 @@ class RoadmapTask(Base):
     completed_at = Column(DateTime(timezone=True))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
+    roadmap = relationship("Roadmap", back_populates="tasks")
+
 
 class DailyMission(Base):
     __tablename__ = "daily_missions"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("auth.users.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(UUID(as_uuid=True), nullable=False, index=True)
     task_id = Column(UUID(as_uuid=True), ForeignKey("roadmap_tasks.id", ondelete="SET NULL"))
     title = Column(String, nullable=False)
     date = Column(DateTime(timezone=True), nullable=False, index=True)
@@ -65,7 +75,7 @@ class GithubAnalysis(Base):
     __tablename__ = "github_analysis"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("auth.users.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(UUID(as_uuid=True), nullable=False, index=True)
     username = Column(String)
     analysis = Column(JSONB, nullable=False, default=dict)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

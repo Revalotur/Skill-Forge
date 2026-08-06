@@ -19,6 +19,7 @@ build/
 
 # Supabase / service keys
 **/supabase/.env*
+supabase/Info Supabase.txt
 
 # Uploads & temp
 uploads/
