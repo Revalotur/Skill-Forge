@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { BellRing, CheckCircle2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -12,27 +12,27 @@ export function ReminderBanner() {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const res = await fetch("/api/mission/today", { cache: "no-store" });
-        if (res.status === 404) {
-          if (!cancelled) setMission(null);
-          return;
-        }
-        if (res.ok) {
-          const data = (await res.json()) as DailyMission;
-          if (!cancelled) setMission(data);
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
+  const refetch = useCallback(async () => {
+    try {
+      const res = await fetch("/api/mission/today", { cache: "no-store" });
+      if (res.status === 404) {
+        setMission(null);
+        return;
       }
-    })();
-    return () => {
-      cancelled = true;
-    };
+      if (res.ok) {
+        const data = (await res.json()) as DailyMission;
+        setMission(data);
+      }
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    void refetch();
+    window.addEventListener("mission-updated", refetch);
+    return () => window.removeEventListener("mission-updated", refetch);
+  }, [refetch]);
 
   if (loading || !mission || mission.is_completed) return null;
 
