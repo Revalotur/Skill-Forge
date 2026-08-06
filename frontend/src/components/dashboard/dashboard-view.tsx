@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { MissionCard } from "@/components/dashboard/mission-card";
+import { ReminderBanner } from "@/components/dashboard/reminder-banner";
 import type { Roadmap, RoadmapSummary, Streak } from "@/lib/api";
 
 export function DashboardView({ email }: { email: string | null }) {
@@ -148,6 +149,7 @@ export function DashboardView({ email }: { email: string | null }) {
         </p>
       </div>
 
+      <ReminderBanner />
       <MissionCard />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
