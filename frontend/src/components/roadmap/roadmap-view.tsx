@@ -14,6 +14,7 @@ import {
   RefreshCw,
   Sparkles,
   Trash2,
+  Wand2,
   X,
 } from "lucide-react";
 
@@ -39,6 +40,8 @@ export function RoadmapView() {
   const [addingWeek, setAddingWeek] = useState<number | null>(null);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskDesc, setNewTaskDesc] = useState("");
+  const [adapting, setAdapting] = useState(false);
+  const [showAdaptConfirm, setShowAdaptConfirm] = useState(false);
 
   const fetchRoadmap = useCallback(async () => {
     try {
@@ -236,6 +239,30 @@ export function RoadmapView() {
     }
   }
 
+  async function handleAdapt() {
+    if (!roadmap) return;
+    setAdapting(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/roadmap/adapt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ roadmap_id: roadmap.id }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error ?? "Gagal mengadaptasi roadmap.");
+      }
+      setRoadmap(await res.json());
+      setShowAdaptConfirm(false);
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Terjadi kesalahan.");
+    } finally {
+      setAdapting(false);
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex flex-col gap-4">
@@ -326,14 +353,57 @@ export function RoadmapView() {
             · {roadmap.duration_weeks} minggu
           </p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setShowRegenerate((v) => !v)}
-        >
-          <RefreshCw /> Regenerate
-        </Button>
+        <div className="flex items-center gap-2">
+          {doneTasks > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowAdaptConfirm((v) => !v)}
+            >
+              <Wand2 /> Adaptasi Roadmap
+            </Button>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowRegenerate((v) => !v)}
+          >
+            <RefreshCw /> Regenerate
+          </Button>
+        </div>
       </div>
+
+      {showAdaptConfirm && (
+        <Card>
+          <CardContent className="flex flex-col gap-3 p-5">
+            <div className="flex flex-col gap-1">
+              <p className="text-sm font-medium">Adaptasi roadmap?</p>
+              <p className="text-xs text-muted-foreground">
+                Sisa minggu akan disusun ulang sesuai progres kamu. Task yang sudah
+                selesai akan dipertahankan.
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <Button
+                onClick={handleAdapt}
+                disabled={adapting}
+                variant="default"
+                size="sm"
+              >
+                {adapting && <Loader2 className="animate-spin" />}
+                {adapting ? "Mengadaptasi..." : "Ya, adaptasi"}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowAdaptConfirm(false)}
+              >
+                Batal
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {showRegenerate && (
         <Card>

@@ -137,6 +137,13 @@ export async function deleteRoadmapTask(taskId: string) {
   return request<void>(`/roadmap_tasks/${taskId}`, { method: "DELETE" });
 }
 
+export async function adaptRoadmap(payload: { user_id: string; roadmap_id: string }) {
+  return request<Roadmap>("/roadmaps/adapt", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
 export type DailyMission = {
   id: string;
   user_id: string;
