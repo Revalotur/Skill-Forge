@@ -41,3 +41,7 @@ uvicorn app.main:app --reload
 
 Lihat [GitHub Issues](https://github.com/Revalotur/Skill-Forge/issues) — dibagi 4 milestone:
 Sprint 1 (Foundation) → Sprint 2 (Core AI) → Sprint 3 (Engagement) → Sprint 4 (Career Readiness & Deploy).
+
+## 🚀 Deploy
+
+Baca [docs/deploy.md](docs/deploy.md) untuk panduan deploy Vercel + Render + Supabase.
