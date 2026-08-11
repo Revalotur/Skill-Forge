@@ -39,8 +39,10 @@ uvicorn app.main:app --reload
 
 ## 📋 Sprint
 
-Lihat [GitHub Issues](https://github.com/Revalotur/Skill-Forge/issues) — dibagi 4 milestone:
+Lihat [GitHub Issues](https://github.com/Revalotur/Skill-Forge/issues) — dibagi milestone:
 Sprint 1 (Foundation) → Sprint 2 (Core AI) → Sprint 3 (Engagement) → Sprint 4 (Career Readiness & Deploy).
+
+Sprint 5 (Hardening & Adaptive): rate limit API, edit roadmap (tambah/hapus task), adaptive roadmap.
 
 ## 🚀 Deploy
 
