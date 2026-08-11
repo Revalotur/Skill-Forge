@@ -129,7 +129,7 @@ async def _analyze_top_repos(
                 "language": repo.get("language"),
                 "is_fork": bool(repo.get("fork", False)),
                 "pushed_at": repo.get("pushed_at"),
-                **(_analyze_repo_root(client, username, repo)),
+                **await _analyze_repo_root(client, username, repo),
             }
         )
     return enriched
