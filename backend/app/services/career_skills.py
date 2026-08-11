@@ -68,4 +68,5 @@ def match_career(target_career: str) -> str:
 
 def required_skills_for(target_career: str) -> list[str]:
     key = match_career(target_career)
-    return CAREER_SKILLS[key] if key != "default" else DEFAULT_SKILLS
+    skills = CAREER_SKILLS[key] if key != "default" else DEFAULT_SKILLS
+    return list(skills)

@@ -31,3 +31,19 @@ def test_match_career_empty_returns_default():
 def test_required_skills_for_default():
     skills = required_skills_for("Astronaut")
     assert "Git & Version Control" in skills
+
+
+def test_required_skills_for_known_career():
+    skills = required_skills_for("Frontend Developer")
+    assert "React" in skills
+
+
+def test_required_skills_for_returns_copy():
+    a = required_skills_for("Backend Engineer")
+    b = required_skills_for("Backend Engineer")
+    a.append("X")
+    assert "X" not in b
+
+
+def test_match_career_data_scientist():
+    assert match_career("Data Scientist") == "data scientist"

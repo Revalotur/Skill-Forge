@@ -30,10 +30,7 @@ def _extract_user_skills(assessment: Assessment | None, tasks: list[RoadmapTask]
 
 
 def _matches_skill(skill: str, user_tokens: set[str]) -> bool:
-    for tok in _tokenize(skill):
-        if tok in user_tokens:
-            return True
-    return any(t in _tokenize(skill) for t in user_tokens if len(t) >= 3)
+    return any(tok in user_tokens for tok in _tokenize(skill))
 
 
 def compute_career_gap(db: Session, user_id: str) -> dict[str, Any]:
@@ -78,7 +75,7 @@ def compute_career_gap(db: Session, user_id: str) -> dict[str, Any]:
         )
     if roadmap_progress < 100 and roadmap:
         recommendations.append(
-            f"Progres roadmap baru {roadmap_progress}%. Selesaikan task tersisa untuk menaikkan skor kesiapan."
+            f"Progres roadmap saat ini {roadmap_progress}%. Selesaikan task tersisa untuk menaikkan skor kesiapan."
         )
     if not assessment:
         recommendations.append("Lengkapi assessment agar analisis lebih akurat.")
