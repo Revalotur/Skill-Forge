@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     supabase_anon_key: str = ""
     supabase_service_role_key: str = ""
     internal_api_key: str = ""
+    github_token: str = ""
     cors_origins: list[str] = [
         "http://localhost:3000",
         "https://skillforge.vercel.app",

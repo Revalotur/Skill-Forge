@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from app.api.v1 import (
     analytics,
     assessments,
+    github,
     health,
     mentor,
     missions,
@@ -18,3 +19,4 @@ api_router.include_router(roadmap_tasks.router)
 api_router.include_router(missions.router)
 api_router.include_router(mentor.router)
 api_router.include_router(analytics.router)
+api_router.include_router(github.router)
