@@ -8,6 +8,7 @@ import {
   ClipboardList,
   MessageSquare,
   BarChart3,
+  Target,
   User,
 } from "lucide-react";
 
@@ -19,6 +20,7 @@ const navItems = [
   { href: "/assessment", label: "Assessment", icon: ClipboardList },
   { href: "/mentor", label: "AI Mentor", icon: MessageSquare },
   { href: "/analytics", label: "Statistik", icon: BarChart3 },
+  { href: "/career", label: "Career Gap", icon: Target },
   { href: "/profile", label: "Profil", icon: User },
 ];
 
