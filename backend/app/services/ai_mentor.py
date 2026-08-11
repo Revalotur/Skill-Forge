@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import logging
 from typing import Any
+from uuid import UUID
 
 import httpx
 
@@ -123,7 +124,7 @@ async def mentor_reply(
 
 def extract_context_data(
     db,
-    user_id: str,
+    user_id: UUID,
 ) -> tuple[Assessment | None, Roadmap | None, list[RoadmapTask]]:
     """Ambil assessment terakhir, roadmap terakhir, dan task-nya."""
     from sqlalchemy import select

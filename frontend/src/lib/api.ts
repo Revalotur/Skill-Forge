@@ -201,7 +201,7 @@ export async function getAnalytics(userId: string) {
 
 export type GithubAnalysis = {
   id: string;
-  username: string;
+  username: string | null;
   analysis: {
     username: string;
     source: "github";

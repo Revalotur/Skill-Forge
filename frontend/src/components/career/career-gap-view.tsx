@@ -24,6 +24,7 @@ export function CareerGapView() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
+    setError(null);
     try {
       const res = await fetch("/api/career-gap", { cache: "no-store" });
       if (!res.ok) {
@@ -114,7 +115,9 @@ export function CareerGapView() {
           <Progress value={data.readiness_score} />
           <p className="text-sm text-muted-foreground">
             Progres roadmap: {data.roadmap_progress}% • Skill terpenuhi:{" "}
-            {data.current_skills.length}/{data.required_skills.length}
+            {data.required_skills.length > 0
+              ? `${data.current_skills.length}/${data.required_skills.length}`
+              : "–"}
           </p>
         </CardContent>
       </Card>
@@ -168,14 +171,18 @@ export function CareerGapView() {
           <CardTitle>Rekomendasi</CardTitle>
         </CardHeader>
         <CardContent>
-          <ul className="flex flex-col gap-2">
-            {data.recommendations.map((r, i) => (
-              <li key={i} className="flex items-start gap-2 rounded-lg border p-3 text-sm">
-                <Sparkles className="mt-0.5 size-4 shrink-0 text-primary" />
-                <span>{r}</span>
-              </li>
-            ))}
-          </ul>
+          {data.recommendations.length > 0 ? (
+            <ul className="flex flex-col gap-2">
+              {data.recommendations.map((r, i) => (
+                <li key={i} className="flex items-start gap-2 rounded-lg border p-3 text-sm">
+                  <Sparkles className="mt-0.5 size-4 shrink-0 text-primary" />
+                  <span>{r}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-muted-foreground">Belum ada rekomendasi.</p>
+          )}
         </CardContent>
       </Card>
     </div>

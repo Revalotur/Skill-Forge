@@ -15,7 +15,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
 import type { GithubAnalysis } from "@/lib/api";
 
 export function GithubAnalyzer() {
@@ -25,14 +24,21 @@ export function GithubAnalyzer() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let stale = false;
     void (async () => {
       try {
         const res = await fetch("/api/github/latest", { cache: "no-store" });
-        if (res.ok) setResult(await res.json());
+        if (res.ok && !stale) {
+          const data = await res.json();
+          setResult(data);
+        }
       } catch {
         // ignore: belum pernah analisis
       }
     })();
+    return () => {
+      stale = true;
+    };
   }, []);
 
   async function analyze() {
@@ -96,6 +102,7 @@ export function GithubAnalyzer() {
           <Card>
             <CardContent className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-4">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={a.profile.avatar_url || "/vercel.svg"}
                   alt={a.username}

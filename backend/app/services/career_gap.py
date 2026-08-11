@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from typing import Any
+from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -33,7 +34,7 @@ def _matches_skill(skill: str, user_tokens: set[str]) -> bool:
     return any(tok in user_tokens for tok in _tokenize(skill))
 
 
-def compute_career_gap(db: Session, user_id: str) -> dict[str, Any]:
+def compute_career_gap(db: Session, user_id: UUID) -> dict[str, Any]:
     assessment = db.execute(
         select(Assessment)
         .where(Assessment.user_id == user_id)
