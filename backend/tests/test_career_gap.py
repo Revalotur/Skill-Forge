@@ -20,6 +20,14 @@ def test_match_career_unknown_returns_default():
     assert match_career("Astronaut") == "default"
 
 
+def test_match_career_empty_returns_default():
+    assert match_career("") == "default"
+    assert required_skills_for("") == [
+        "Programming Language Dasar", "Git & Version Control", "REST API",
+        "Database Dasar", "Testing", "Deployment", "Best Practices",
+    ]
+
+
 def test_required_skills_for_default():
     skills = required_skills_for("Astronaut")
     assert "Git & Version Control" in skills

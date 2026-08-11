@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 from datetime import datetime, timedelta, timezone
 from typing import Any
@@ -118,21 +119,19 @@ async def _analyze_repo_root(
 async def _analyze_top_repos(
     client: httpx.AsyncClient, username: str, top: list[dict[str, Any]]
 ) -> list[dict[str, Any]]:
-    enriched: list[dict[str, Any]] = []
-    for repo in top:
-        enriched.append(
-            {
-                "name": repo["name"],
-                "description": repo.get("description") or "",
-                "stars": int(repo.get("stargazers_count", 0) or 0),
-                "forks": int(repo.get("forks_count", 0) or 0),
-                "language": repo.get("language"),
-                "is_fork": bool(repo.get("fork", False)),
-                "pushed_at": repo.get("pushed_at"),
-                **await _analyze_repo_root(client, username, repo),
-            }
-        )
-    return enriched
+    async def _enrich(repo: dict[str, Any]) -> dict[str, Any]:
+        return {
+            "name": repo["name"],
+            "description": repo.get("description") or "",
+            "stars": int(repo.get("stargazers_count", 0) or 0),
+            "forks": int(repo.get("forks_count", 0) or 0),
+            "language": repo.get("language"),
+            "is_fork": bool(repo.get("fork", False)),
+            "pushed_at": repo.get("pushed_at"),
+            **await _analyze_repo_root(client, username, repo),
+        }
+
+    return list(await asyncio.gather(*(_enrich(repo) for repo in top)))
 
 
 async def fetch_github_profile(username: str) -> dict[str, Any]:
