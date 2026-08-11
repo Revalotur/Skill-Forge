@@ -9,6 +9,7 @@ import {
   MessageSquare,
   BarChart3,
   Target,
+  GitBranch,
   User,
 } from "lucide-react";
 
@@ -21,6 +22,7 @@ const navItems = [
   { href: "/mentor", label: "AI Mentor", icon: MessageSquare },
   { href: "/analytics", label: "Statistik", icon: BarChart3 },
   { href: "/career", label: "Career Gap", icon: Target },
+  { href: "/github", label: "GitHub Analyzer", icon: GitBranch },
   { href: "/profile", label: "Profil", icon: User },
 ];
 
