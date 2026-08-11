@@ -12,6 +12,7 @@ class RoadmapGenerateRequest(BaseModel):
 
 
 class RoadmapTaskCreate(BaseModel):
+    roadmap_id: UUID
     week: int
     title: str
     description: str = ""
