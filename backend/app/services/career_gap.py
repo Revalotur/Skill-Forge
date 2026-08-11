@@ -60,7 +60,7 @@ def compute_career_gap(db: Session, user_id: UUID) -> dict[str, Any]:
     target_career = (assessment.target_career if assessment else "") or (
         roadmap.target_career if roadmap else ""
     )
-    required = required_skills_for(target_career)
+    required = required_skills_for(target_career) if target_career else []
     user_tokens = _extract_user_skills(assessment, tasks)
 
     current = [s for s in required if _matches_skill(s, user_tokens)]
