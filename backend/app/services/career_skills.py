@@ -51,6 +51,9 @@ def _normalize(text: str) -> str:
 def match_career(target_career: str) -> str:
     """Kembalikan key CAREER_SKILLS yang cocok, atau 'default'."""
     normalized = _normalize(target_career or "")
+    for key, key_norm in ((k, _normalize(k)) for k in CAREER_SKILLS):
+        if normalized == key_norm:
+            return key
     for key in CAREER_SKILLS:
         key_norm = _normalize(key)
         if key_norm in normalized or normalized in key_norm:
