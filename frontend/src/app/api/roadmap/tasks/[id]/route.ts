@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { createClient } from "@/lib/supabase/server";
-import { updateTask } from "@/lib/api";
+import { deleteRoadmapTask, updateTask } from "@/lib/api";
 
 export async function PATCH(
   request: Request,
@@ -46,6 +46,36 @@ export async function PATCH(
         : 500;
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Gagal update task." },
+      { status }
+    );
+  }
+}
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Tidak terautentikasi." }, { status: 401 });
+  }
+
+  const { id } = await params;
+
+  try {
+    await deleteRoadmapTask(id);
+    return NextResponse.json({ ok: true }, { status: 200 });
+  } catch (err) {
+    const status =
+      err instanceof Error && "status" in err
+        ? (err as { status: number }).status
+        : 500;
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Gagal menghapus task." },
       { status }
     );
   }

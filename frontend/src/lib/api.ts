@@ -120,6 +120,23 @@ export async function updateTask(
   });
 }
 
+export async function addRoadmapTask(payload: {
+  roadmap_id: string;
+  week: number;
+  title: string;
+  description?: string;
+  resources?: string[];
+}) {
+  return request<RoadmapTask>("/roadmap_tasks", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function deleteRoadmapTask(taskId: string) {
+  return request<void>(`/roadmap_tasks/${taskId}`, { method: "DELETE" });
+}
+
 export type DailyMission = {
   id: string;
   user_id: string;

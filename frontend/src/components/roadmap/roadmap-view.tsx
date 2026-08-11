@@ -3,15 +3,17 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  AlertTriangle,
+  Check,
   CheckCircle2,
   Circle,
   ExternalLink,
   Loader2,
+  Pencil,
+  Plus,
   RefreshCw,
   Sparkles,
-  AlertTriangle,
-  Pencil,
-  Check,
+  Trash2,
   X,
 } from "lucide-react";
 
@@ -34,6 +36,9 @@ export function RoadmapView() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editDesc, setEditDesc] = useState("");
+  const [addingWeek, setAddingWeek] = useState<number | null>(null);
+  const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [newTaskDesc, setNewTaskDesc] = useState("");
 
   const fetchRoadmap = useCallback(async () => {
     try {
@@ -167,6 +172,63 @@ export function RoadmapView() {
           : prev
       );
       setEditingId(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Terjadi kesalahan.");
+    } finally {
+      setUpdatingId(null);
+    }
+  }
+
+  async function handleAddTask(week: number) {
+    if (!roadmap || !newTaskTitle.trim()) return;
+    setUpdatingId("new");
+    setError(null);
+    try {
+      const res = await fetch("/api/roadmap/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          roadmap_id: roadmap.id,
+          week,
+          title: newTaskTitle,
+          description: newTaskDesc,
+        }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error ?? "Gagal menambah task.");
+      }
+      const created = (await res.json()) as RoadmapTask;
+      setRoadmap((prev) =>
+        prev
+          ? { ...prev, tasks: [...prev.tasks, created].sort((a, b) => a.week - b.week) }
+          : prev
+      );
+      setAddingWeek(null);
+      setNewTaskTitle("");
+      setNewTaskDesc("");
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Terjadi kesalahan.");
+    } finally {
+      setUpdatingId(null);
+    }
+  }
+
+  async function handleDeleteTask(task: RoadmapTask) {
+    if (!window.confirm("Hapus task ini?")) return;
+    setUpdatingId(task.id);
+    setError(null);
+    try {
+      const res = await fetch(`/api/roadmap/tasks/${task.id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error ?? "Gagal menghapus task.");
+      }
+      setRoadmap((prev) =>
+        prev ? { ...prev, tasks: prev.tasks.filter((t) => t.id !== task.id) } : prev
+      );
+      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Terjadi kesalahan.");
     } finally {
@@ -424,14 +486,24 @@ export function RoadmapView() {
                             >
                               {task.title}
                             </span>
-                            <button
-                              type="button"
-                              onClick={() => startEdit(task)}
-                              aria-label={`Edit task: ${task.title}`}
-                              className="shrink-0 text-muted-foreground hover:text-foreground"
-                            >
-                              <Pencil className="size-3.5" />
-                            </button>
+                            <div className="flex shrink-0 items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => startEdit(task)}
+                                aria-label={`Edit task: ${task.title}`}
+                                className="text-muted-foreground hover:text-foreground"
+                              >
+                                <Pencil className="size-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteTask(task)}
+                                aria-label={`Hapus task: ${task.title}`}
+                                className="text-muted-foreground hover:text-destructive"
+                              >
+                                <Trash2 className="size-3.5" />
+                              </button>
+                            </div>
                           </div>
                           {task.description && (
                             <p className="text-xs text-muted-foreground">
@@ -458,6 +530,54 @@ export function RoadmapView() {
                       )}
                     </div>
                   ))}
+                  {addingWeek === week ? (
+                    <div className="flex flex-col gap-2 rounded-md border border-dashed p-3">
+                      <input
+                        value={newTaskTitle}
+                        onChange={(e) => setNewTaskTitle(e.target.value)}
+                        placeholder="Judul task baru"
+                        aria-label="Judul task baru"
+                        className="border-input bg-background rounded-md border px-2 py-1 text-sm outline-none"
+                      />
+                      <textarea
+                        value={newTaskDesc}
+                        onChange={(e) => setNewTaskDesc(e.target.value)}
+                        rows={2}
+                        placeholder="Deskripsi (opsional)"
+                        aria-label="Deskripsi task baru"
+                        className="border-input bg-background placeholder:text-muted-foreground rounded-md border px-2 py-1 text-xs outline-none"
+                      />
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => handleAddTask(week)}
+                          disabled={updatingId === "new" || !newTaskTitle.trim()}
+                        >
+                          {updatingId === "new" && <Loader2 className="animate-spin" />}
+                          Tambah
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            setAddingWeek(null);
+                            setNewTaskTitle("");
+                            setNewTaskDesc("");
+                          }}
+                        >
+                          Batal
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setAddingWeek(week)}
+                      className="inline-flex w-fit items-center gap-1 text-xs text-muted-foreground hover:text-primary"
+                    >
+                      <Plus className="size-3.5" /> Tambah Task
+                    </button>
+                  )}
                 </div>
               </CardContent>
             </Card>
