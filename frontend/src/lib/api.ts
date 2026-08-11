@@ -198,3 +198,71 @@ export type Analytics = {
 export async function getAnalytics(userId: string) {
   return request<Analytics>(`/analytics?user_id=${userId}`);
 }
+
+export type GithubAnalysis = {
+  id: string;
+  username: string;
+  analysis: {
+    username: string;
+    source: "github";
+    profile: {
+      name: string;
+      bio: string;
+      avatar_url: string;
+      followers: number;
+      following: number;
+      public_repos: number;
+      location: string;
+      blog: string;
+      html_url: string;
+    };
+    repos: {
+      name: string;
+      description: string;
+      stars: number;
+      forks: number;
+      language: string | null;
+      is_fork: boolean;
+      pushed_at: string | null;
+      has_readme: boolean;
+      has_license: boolean;
+      has_ci: boolean;
+      has_tests: boolean;
+    }[];
+    tech_stack: string[];
+    best_practices: {
+      readme_count: number;
+      license_count: number;
+      ci_count: number;
+      test_count: number;
+    };
+    score: number;
+    recommendations: string[];
+  };
+  created_at: string;
+};
+
+export type CareerGap = {
+  target_career: string;
+  readiness_score: number;
+  required_skills: string[];
+  current_skills: string[];
+  missing_skills: string[];
+  roadmap_progress: number;
+  recommendations: string[];
+};
+
+export async function analyzeGithub(userId: string, username: string) {
+  return request<GithubAnalysis>("/github/analyze", {
+    method: "POST",
+    body: JSON.stringify({ user_id: userId, username }),
+  });
+}
+
+export async function getLatestGithub(userId: string) {
+  return request<GithubAnalysis>(`/github/latest?user_id=${userId}`);
+}
+
+export async function getCareerGap(userId: string) {
+  return request<CareerGap>(`/career-gap?user_id=${userId}`);
+}
