@@ -11,6 +11,11 @@ class RoadmapGenerateRequest(BaseModel):
     instructions: str | None = Field(default=None, description="Instruksi tambahan untuk regenerate")
 
 
+class RoadmapAdaptRequest(BaseModel):
+    user_id: UUID
+    roadmap_id: UUID
+
+
 class RoadmapTaskCreate(BaseModel):
     roadmap_id: UUID
     week: int

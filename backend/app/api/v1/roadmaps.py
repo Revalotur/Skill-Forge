@@ -11,13 +11,14 @@ from app.core.database import get_db
 from app.core.security import require_internal_key
 from app.models import Assessment, Roadmap, RoadmapTask
 from app.schemas.roadmap import (
+    RoadmapAdaptRequest,
     RoadmapGenerateRequest,
     RoadmapRead,
     RoadmapSummary,
     RoadmapTaskPatch,
     RoadmapTaskRead,
 )
-from app.services.ai_roadmap import generate_roadmap
+from app.services.ai_roadmap import adapt_roadmap, generate_roadmap
 
 router = APIRouter(
     prefix="/roadmaps",
@@ -117,6 +118,56 @@ async def generate(request: Request, payload: RoadmapGenerateRequest, db: Sessio
         raise HTTPException(status_code=500, detail="Gagal generate roadmap")
 
     db.refresh(roadmap)
+    return _get_roadmap_with_tasks(roadmap.id, db)
+
+
+@router.post("/adapt", response_model=RoadmapRead)
+@limiter.limit("5/minute")
+async def adapt(request: Request, payload: RoadmapAdaptRequest, db: Session = Depends(get_db)):
+    roadmap = _get_roadmap_with_tasks(payload.roadmap_id, db)
+    if roadmap.user_id != payload.user_id:
+        raise HTTPException(status_code=403, detail="Bukan roadmap milik user ini")
+
+    completed = [t.title for t in roadmap.tasks if t.is_completed]
+    weeks_done = sorted({int(t.week) for t in roadmap.tasks if t.is_completed})
+    current_week = weeks_done[-1] if weeks_done else 0
+
+    assessment = db.get(Assessment, roadmap.assessment_id) if roadmap.assessment_id else None
+    if not assessment:
+        raise HTTPException(status_code=400, detail="Assessment tidak ditemukan untuk adaptasi")
+
+    data = await adapt_roadmap(
+        {
+            "target_career": roadmap.target_career,
+            "current_skills": assessment.current_skills,
+            "learning_hours": assessment.learning_hours,
+            "deadline": str(assessment.deadline) if assessment.deadline else None,
+            "experience": assessment.experience,
+        },
+        completed,
+        current_week,
+    )
+
+    # Pertahankan task selesai, hapus yang belum, buat ulang sisa
+    for task in roadmap.tasks:
+        if not task.is_completed:
+            db.delete(task)
+    db.flush()
+
+    roadmap.duration_weeks = data["duration_weeks"]
+    roadmap.content = data
+    roadmap.status = "ready"
+
+    for week in data["weeks"]:
+        for task in week["tasks"]:
+            db.add(RoadmapTask(
+                roadmap_id=roadmap.id,
+                week=int(week["week"]),
+                title=task["title"],
+                description=task.get("description", ""),
+                resources=task.get("resources", []),
+            ))
+    db.commit()
     return _get_roadmap_with_tasks(roadmap.id, db)
 
 

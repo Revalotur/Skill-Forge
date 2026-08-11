@@ -187,3 +187,40 @@ async def generate_roadmap(assessment: dict[str, Any]) -> dict[str, Any]:
         current_skills=assessment.get("current_skills", ""),
         learning_hours=assessment.get("learning_hours", ""),
     )
+
+
+def build_adaptive_prompt(
+    assessment: dict[str, Any],
+    completed_titles: list[str],
+    current_week: int,
+) -> str:
+    base = build_prompt(assessment)
+    return f"""{base}
+=== KONTEKS PROGRES ===
+Kamu sedang melanjutkan roadmap yang sudah berjalan. Ini lanjutan dari roadmap sebelumnya.
+completed_tasks: {', '.join(completed_titles) or '(tidak ada)'}
+current_week: {current_week}
+Instruksi: JANGAN ulangi materi yang sudah diselesaikan. Susun ulang sisa minggu (mulai minggu {current_week + 1}) dengan task lanjutan yang menantang. Respons JSON dengan format yang sama.
+"""
+
+
+async def adapt_roadmap(
+    assessment: dict[str, Any],
+    completed_titles: list[str],
+    current_week: int,
+) -> dict[str, Any]:
+    prompt = build_adaptive_prompt(assessment, completed_titles, current_week)
+    if settings.gemini_api_key:
+        try:
+            raw_text = await _call_gemini(prompt)
+            data = _extract_json(raw_text)
+            validated = validate_roadmap(data)
+            validated["source"] = "gemini-adaptive"
+            return validated
+        except (AIUnavailableError, ValueError, json.JSONDecodeError) as exc:
+            logger.warning("Gemini adaptive gagal, pakai fallback: %s", exc)
+    return build_rule_based_roadmap(
+        target_career=assessment.get("target_career", "Full-Stack Developer"),
+        current_skills=assessment.get("current_skills", ""),
+        learning_hours=assessment.get("learning_hours", ""),
+    )
