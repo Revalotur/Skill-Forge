@@ -1,5 +1,3 @@
-import pytest
-
 from app.services.github_analyzer import GithubFetchError, _top_repos
 
 
