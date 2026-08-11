@@ -20,7 +20,9 @@ _SESSION_HEADERS = {"Accept": "application/vnd.github+json"}
 
 
 class GithubFetchError(Exception):
-    pass
+    def __init__(self, message: str, status_code: int = 400):
+        super().__init__(message)
+        self.status_code = status_code
 
 
 def _headers() -> dict[str, str]:
@@ -33,13 +35,25 @@ def _headers() -> dict[str, str]:
 async def _get(client: httpx.AsyncClient, path: str) -> Any:
     resp = await client.get(f"{GITHUB_API}{path}")
     if resp.status_code == 404:
-        raise GithubFetchError("Username GitHub tidak ditemukan")
-    if resp.status_code in (403, 429):
+        raise GithubFetchError("Username GitHub tidak ditemukan", status_code=404)
+    if resp.status_code == 429 or (
+        resp.status_code == 403 and resp.headers.get("x-ratelimit-remaining") == "0"
+    ):
         raise GithubFetchError(
-            "Rate limit GitHub API tercapai. Tunggu beberapa menit atau atur GITHUB_TOKEN."
+            "Rate limit GitHub API tercapai. Tunggu beberapa menit atau atur GITHUB_TOKEN.",
+            status_code=429,
         )
     resp.raise_for_status()
     return resp.json()
+
+
+def _parse_pushed_at(value: str | None) -> datetime | None:
+    if not value:
+        return None
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except (ValueError, TypeError):
+        return None
 
 
 def _score_profile(profile: dict[str, Any]) -> tuple[int, list[str]]:
@@ -90,13 +104,6 @@ def _repo_score(top: list[dict[str, Any]]) -> int:
     return 0
 
 
-def _readme_ratio(root_items: list[dict[str, Any]]) -> float:
-    if not root_items:
-        return 0.0
-    has = [i for i in root_items if i.get("name", "").lower().startswith("readme")]
-    return len(has) / len(root_items)
-
-
 async def _analyze_repo_root(
     client: httpx.AsyncClient, owner: str, repo: dict[str, Any]
 ) -> dict[str, Any]:
@@ -135,10 +142,18 @@ async def _analyze_top_repos(
 
 
 async def fetch_github_profile(username: str) -> dict[str, Any]:
-    """Ambil profil + repos publik, analisis best-practices, hitung skor 0-100."""
+    """Ambil profil + repos publik, analisis best-practices, hitung skor 0-85."""
     async with httpx.AsyncClient(timeout=15, headers=_headers()) as client:
-        profile = await _get(client, f"/users/{username}")
-        repos = await _get(client, f"/users/{username}/repos?sort=pushed&per_page=100")
+        try:
+            profile = await _get(client, f"/users/{username}")
+            repos = await _get(client, f"/users/{username}/repos?sort=pushed&per_page=100")
+        except GithubFetchError:
+            raise
+        except httpx.HTTPError as exc:
+            logger.warning("GitHub API error untuk %s: %s", username, exc)
+            raise GithubFetchError(
+                "Layanan GitHub sedang gangguan, coba lagi nanti.", status_code=502
+            ) from exc
         if not isinstance(repos, list):
             repos = []
         top = _top_repos(repos)
@@ -151,12 +166,7 @@ async def fetch_github_profile(username: str) -> dict[str, Any]:
     tests = [r for r in repo_details if r["has_tests"]]
 
     cutoff = datetime.now(timezone.utc) - timedelta(days=ACTIVE_DAYS)
-    active = [
-        r
-        for r in repo_details
-        if r.get("pushed_at")
-        and datetime.fromisoformat(r["pushed_at"].replace("Z", "+00:00")) >= cutoff
-    ]
+    active = [r for r in repo_details if (parsed := _parse_pushed_at(r.get("pushed_at"))) and parsed >= cutoff]
 
     score, recs = _score_profile(profile)
     score += _repo_score(repo_details)

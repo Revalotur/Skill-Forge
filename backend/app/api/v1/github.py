@@ -22,10 +22,13 @@ router = APIRouter(
 @router.post("/analyze", response_model=GithubRead, status_code=201)
 @limiter.limit("10/minute")
 async def analyze(request: Request, payload: GithubAnalyzeRequest, db: Session = Depends(get_db)):
+    username = payload.username.strip()
+    if not username:
+        raise HTTPException(status_code=422, detail="Username GitHub wajib diisi")
     try:
-        analysis = await fetch_github_profile(payload.username.strip())
+        analysis = await fetch_github_profile(username)
     except GithubFetchError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+        raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
 
     record = GithubAnalysis(
         user_id=payload.user_id,
