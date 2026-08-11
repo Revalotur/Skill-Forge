@@ -1,7 +1,9 @@
 from datetime import datetime, timezone
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
+
+from app.core.ratelimit import limiter
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -23,7 +25,8 @@ router = APIRouter(
 
 
 @router.get("/today", response_model=MissionRead)
-def get_today_mission(user_id: UUID, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+def get_today_mission(request: Request, user_id: UUID, db: Session = Depends(get_db)):
     try:
         return ensure_today_mission(db, user_id)
     except _NoMissionError as exc:

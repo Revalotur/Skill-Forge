@@ -1,6 +1,8 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
+
+from app.core.ratelimit import limiter
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -18,7 +20,8 @@ router = APIRouter(
 
 
 @router.post("/analyze", response_model=GithubRead, status_code=201)
-async def analyze(payload: GithubAnalyzeRequest, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+async def analyze(request: Request, payload: GithubAnalyzeRequest, db: Session = Depends(get_db)):
     try:
         analysis = await fetch_github_profile(payload.username.strip())
     except GithubFetchError as exc:

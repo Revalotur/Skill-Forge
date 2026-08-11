@@ -1,7 +1,9 @@
 from datetime import datetime
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
+
+from app.core.ratelimit import limiter
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, joinedload
 
@@ -50,7 +52,8 @@ def _build_content(assessment: Assessment, instructions: str | None = None) -> d
 
 
 @router.post("/generate", response_model=RoadmapRead, status_code=201)
-async def generate(payload: RoadmapGenerateRequest, db: Session = Depends(get_db)):
+@limiter.limit("5/minute")
+async def generate(request: Request, payload: RoadmapGenerateRequest, db: Session = Depends(get_db)):
     if payload.assessment_id:
         assessment = db.get(Assessment, payload.assessment_id)
         if not assessment:

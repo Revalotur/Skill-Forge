@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
+
+from app.core.ratelimit import limiter
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -18,7 +20,9 @@ router = APIRouter(
 
 
 @router.post("/chat", response_model=MentorChatResponse)
+@limiter.limit("20/minute")
 async def chat(
+    request: Request,
     payload: MentorChatRequest,
     db: Session = Depends(get_db),
 ):
