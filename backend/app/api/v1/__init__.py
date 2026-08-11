@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from app.api.v1 import (
     analytics,
     assessments,
+    career_gap,
     github,
     health,
     mentor,
@@ -20,3 +21,4 @@ api_router.include_router(missions.router)
 api_router.include_router(mentor.router)
 api_router.include_router(analytics.router)
 api_router.include_router(github.router)
+api_router.include_router(career_gap.router)
