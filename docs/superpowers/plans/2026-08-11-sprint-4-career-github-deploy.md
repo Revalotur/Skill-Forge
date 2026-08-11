@@ -445,8 +445,6 @@ git commit -m "feat: API github analyze + latest dengan persist di github_analys
 `backend/tests/test_github_analyzer.py`:
 
 ```python
-import pytest
-
 from app.services.github_analyzer import GithubFetchError, _top_repos
 
 
