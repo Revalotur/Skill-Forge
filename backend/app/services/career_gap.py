@@ -11,7 +11,12 @@ from app.services.career_skills import required_skills_for
 
 
 def _tokenize(text: str) -> set[str]:
-    return {re.sub(r"[^a-z0-9]", "", w.lower()) for w in re.split(r"[\s,;|/]+", text or "") if w}
+    tokens: set[str] = set()
+    for w in re.split(r"[\s,;|/]+", text or ""):
+        token = re.sub(r"[^a-z0-9]", "", w.lower())
+        if token:
+            tokens.add(token)
+    return tokens
 
 
 def _extract_user_skills(assessment: Assessment | None, tasks: list[RoadmapTask]) -> set[str]:
