@@ -276,6 +276,29 @@ export type CareerGap = {
   recommendations: string[];
 };
 
+export type CvAnalysis = {
+  id: string;
+  user_id: string;
+  filename: string | null;
+  analysis: {
+    target_career: string;
+    ats_score: number;
+    contact_score: number;
+    structure_score: number;
+    skills_score: number;
+    quantified_score: number;
+    length_score: number;
+    sections_found: string[];
+    detected_skills: string[];
+    missing_skills: string[];
+    quantified_mentions: number;
+    word_count: number;
+    suggestions: string[];
+    source: "gemini" | "rule-based";
+  };
+  created_at: string;
+};
+
 export async function analyzeGithub(userId: string, username: string) {
   return request<GithubAnalysis>("/github/analyze", {
     method: "POST",
@@ -289,4 +312,30 @@ export async function getLatestGithub(userId: string) {
 
 export async function getCareerGap(userId: string) {
   return request<CareerGap>(`/career-gap?user_id=${userId}`);
+}
+
+export async function analyzeCv(form: FormData) {
+  const res = await fetch(backendApiPath("/cv/analyze"), {
+    method: "POST",
+    headers: { "x-internal-api-key": INTERNAL_API_KEY },
+    body: form,
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    let message = `Backend error ${res.status}`;
+    try {
+      const body = await res.json();
+      if (body?.detail) message = String(body.detail);
+    } catch {
+      // ignore
+    }
+    throw new BackendError(message, res.status);
+  }
+
+  return (await res.json()) as CvAnalysis;
+}
+
+export async function getLatestCv(userId: string) {
+  return request<CvAnalysis>(`/cv/latest?user_id=${userId}`);
 }

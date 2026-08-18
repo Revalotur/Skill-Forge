@@ -10,6 +10,7 @@ import {
   BarChart3,
   Target,
   GitBranch,
+  FileText,
   User,
 } from "lucide-react";
 
@@ -23,6 +24,7 @@ const navItems = [
   { href: "/analytics", label: "Statistik", icon: BarChart3 },
   { href: "/career", label: "Career Gap", icon: Target },
   { href: "/github", label: "GitHub Analyzer", icon: GitBranch },
+  { href: "/cv", label: "CV Analyzer", icon: FileText },
   { href: "/profile", label: "Profil", icon: User },
 ];
 
