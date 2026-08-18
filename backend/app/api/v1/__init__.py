@@ -4,6 +4,7 @@ from app.api.v1 import (
     analytics,
     assessments,
     career_gap,
+    cv,
     github,
     health,
     mentor,
@@ -22,3 +23,4 @@ api_router.include_router(mentor.router)
 api_router.include_router(analytics.router)
 api_router.include_router(github.router)
 api_router.include_router(career_gap.router)
+api_router.include_router(cv.router)
