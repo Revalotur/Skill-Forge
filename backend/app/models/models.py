@@ -79,3 +79,13 @@ class GithubAnalysis(Base):
     username = Column(String)
     analysis = Column(JSONB, nullable=False, default=dict)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class CvAnalysis(Base):
+    __tablename__ = "cv_analysis"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), nullable=False, index=True)
+    filename = Column(String)
+    analysis = Column(JSONB, nullable=False, default=dict)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())

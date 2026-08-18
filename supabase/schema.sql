@@ -86,7 +86,19 @@ create table if not exists public.github_analysis (
 create index if not exists github_analysis_user_id_idx
   on public.github_analysis (user_id);
 
--- 6. users — profil tambahan user (di samping auth.users)
+-- 6. cv_analysis — hasil analisis CV / ATS score user
+create table if not exists public.cv_analysis (
+  id uuid primary key default uuid_generate_v4(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  filename text,
+  analysis jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists cv_analysis_user_id_idx
+  on public.cv_analysis (user_id);
+
+-- 7. users — profil tambahan user (di samping auth.users)
 create table if not exists public.users (
   id uuid primary key references auth.users(id) on delete cascade,
   full_name text,
@@ -155,6 +167,7 @@ alter table public.roadmaps enable row level security;
 alter table public.roadmap_tasks enable row level security;
 alter table public.daily_missions enable row level security;
 alter table public.github_analysis enable row level security;
+alter table public.cv_analysis enable row level security;
 alter table public.users enable row level security;
 
 -- users: hanya pemilik yang bisa baca/tulis datanya
@@ -233,4 +246,14 @@ create policy "github_analysis insert own" on public.github_analysis
 create policy "github_analysis update own" on public.github_analysis
   for update using (auth.uid() = user_id);
 create policy "github_analysis delete own" on public.github_analysis
+  for delete using (auth.uid() = user_id);
+
+-- cv_analysis
+create policy "cv_analysis select own" on public.cv_analysis
+  for select using (auth.uid() = user_id);
+create policy "cv_analysis insert own" on public.cv_analysis
+  for insert with check (auth.uid() = user_id);
+create policy "cv_analysis update own" on public.cv_analysis
+  for update using (auth.uid() = user_id);
+create policy "cv_analysis delete own" on public.cv_analysis
   for delete using (auth.uid() = user_id);
