@@ -44,6 +44,8 @@ Sprint 1 (Foundation) → Sprint 2 (Core AI) → Sprint 3 (Engagement) → Sprin
 
 Sprint 5 (Hardening & Adaptive): rate limit API, edit roadmap (tambah/hapus task), adaptive roadmap.
 
+Sprint 6 (CV Analyzer & Deploy): upload PDF → ATS score + skill gap + saran perbaikan, deploy blueprint Render + runbook deploy.
+
 ## 🚀 Deploy
 
 Baca [docs/deploy.md](docs/deploy.md) untuk panduan deploy Vercel + Render + Supabase.
